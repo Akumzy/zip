@@ -89,7 +89,9 @@ func main() {
 			_, name = filepath.Split(file)
 
 		}
-		log.Println(name, file)
+		// replace \ with / in Windows
+		name = strings.Replace(name, "\\", "/", -1)
+		log.Printf("SRC:%s DEST: %s ", name, file)
 		f, err := w.Create(name)
 		if err != nil {
 			log.Fatal(err)
