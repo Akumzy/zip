@@ -35,29 +35,30 @@ func main() {
 		}
 
 	} else {
-		fmt.Println("Use zip src dist")
+		fmt.Println("To zip a path simply run zip sourcePath distinationPath")
 		os.Exit(1)
 	}
-	log.Println("src ", SRC)
+
 	srcInfo, err := os.Stat(SRC)
-	log.Println(srcInfo)
+
 	if err != nil {
 		log.Fatalln(err)
 	}
 	var paths []string
+
 	if srcInfo.IsDir() {
 		err := filepath.Walk(SRC, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
-			} else {
-				if !info.IsDir() {
-					if &paths == nil {
-						paths = []string{path}
-					} else {
-						paths = append(paths, path)
-					}
+			}
+			if !info.IsDir() {
+				if &paths == nil {
+					paths = []string{path}
+				} else {
+					paths = append(paths, path)
 				}
 			}
+
 			return nil
 		})
 		if err != nil {
@@ -75,11 +76,15 @@ func main() {
 
 	// Create a new zip archive.
 	w := zip.NewWriter(dest)
-	for _, file := range paths {
 
+	for _, file := range paths {
+		// trim file/directory path to be relative to
+		// source directory
 		name := filepath.Clean(strings.Replace(file, SRC, "", 1))
 		name = strings.TrimPrefix(name, "\\")
 		name = strings.TrimPrefix(name, "/")
+		// If src is just a single file the file
+		// path will be the file name only
 		if name == "." {
 			_, name = filepath.Split(file)
 
@@ -98,11 +103,10 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-	log.Println(args[0])
 	// Make sure to check the error on Close.
 	err = w.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	log.Println("Done " + DEST)
 }
